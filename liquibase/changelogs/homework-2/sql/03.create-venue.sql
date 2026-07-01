@@ -1,0 +1,10 @@
+CREATE TABLE venue
+(
+	venue_id BIGSERIAL PRIMARY KEY,
+	name VARCHAR(255) NOT NULL,
+	address TEXT NOT NULL,
+	city VARCHAR(255) NOT NULL,
+	capacity INTEGER NOT NULL CHECK (capacity > 0),
+	created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+	updated_at TIMESTAMP WITH TIME ZONE
+);
