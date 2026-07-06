@@ -37,7 +37,7 @@
         <sqlFile encoding="utf8" path="./sql/07.create-ticket.sql" relativeToChangelogFile="true"/>
     </changeSet>
 
-    <changeSet id="homework-2-insert-test-data" author="Stanislav Sakhabiev">
+    <changeSet id="homework-2-insert-test-data" author="Stanislav Sakhabiev" context="dev">
         <sqlFile encoding="utf8" path="./sql/08.insert-test-data.sql" relativeToChangelogFile="true"/>
     </changeSet>
 
@@ -55,6 +55,22 @@
 
     <changeSet id="homework-2-create-index-organizer_user" author="Stanislav Sakhabiev">
         <sqlFile encoding="utf8" path="./sql/12.create-index-organizer_user.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="homework-2-create-event_organizer" author="Stanislav Sakhabiev">
+        <sqlFile encoding="utf8" path="./sql/13.create-event_organizer.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="homework-2-create-index-event_organizer-event" author="Stanislav Sakhabiev">
+        <sqlFile encoding="utf8" path="./sql/14.create-index-event_organizer-event.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="homework-2-create-index-event_organizer-organizer" author="Stanislav Sakhabiev">
+        <sqlFile encoding="utf8" path="./sql/15.create-index-event_organizer-organizer.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="homework-2-insert-test-data-event-organizer" author="Stanislav Sakhabiev" context="dev">
+        <sqlFile encoding="utf8" path="./sql/16.insert-test-data-event-organizer.sql" relativeToChangelogFile="true"/>
     </changeSet>
 
 </databaseChangeLog> 

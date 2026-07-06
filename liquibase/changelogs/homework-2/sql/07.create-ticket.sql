@@ -1,6 +1,6 @@
 CREATE TABLE ticket
 (
-	ticket_id BIGSERIAL PRIMARY KEY,
+	id BIGSERIAL PRIMARY KEY,
     ticket_number VARCHAR(30) NOT NULL UNIQUE,
     user_id BIGINT NOT NULL, --не делаем реф, будет в другом микросервисе
 	event_id BIGINT NOT NULL, --не делаем реф, будет в другом микросервисе

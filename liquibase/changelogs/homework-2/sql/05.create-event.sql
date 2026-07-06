@@ -1,8 +1,7 @@
 CREATE TABLE event
 (
-	event_id BIGSERIAL PRIMARY KEY,
+	id BIGSERIAL PRIMARY KEY,
     venue_id BIGINT NOT NULL,
-    organizer_id BIGINT NOT NULL, --не делаем реф, будет в другом микросервисе
 	title VARCHAR(255) NOT NULL,
 	description TEXT,
 	event_date TIMESTAMP WITH TIME ZONE,
@@ -12,5 +11,5 @@ CREATE TABLE event
 	status VARCHAR(50) NOT NULL CHECK(status IN ('PUBLISHED', 'CANCELLED', 'FINISHED')),
 	created_at TIMESTAMP WITH TIME ZONE NOT NULL,
 	updated_at TIMESTAMP WITH TIME ZONE,
-    FOREIGN KEY (venue_id) REFERENCES venue(venue_id)
+    FOREIGN KEY (venue_id) REFERENCES venue(id)
 );
