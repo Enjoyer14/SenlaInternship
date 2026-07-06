@@ -1,0 +1,9 @@
+CREATE TABLE organizer
+(
+	id BIGSERIAL PRIMARY KEY,
+	user_id BIGINT UNIQUE NOT NULL,
+	company_name VARCHAR(255) NOT NULL,
+	description TEXT,
+	phone VARCHAR(30),
+	FOREIGN KEY (user_id) REFERENCES "user"(id) ON DELETE CASCADE
+);
