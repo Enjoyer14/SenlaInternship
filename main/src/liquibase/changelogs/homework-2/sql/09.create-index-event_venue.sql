@@ -1,0 +1,1 @@
+CREATE INDEX idx_event_venue ON event(venue_id);
