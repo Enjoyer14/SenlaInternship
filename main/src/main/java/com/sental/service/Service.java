@@ -11,7 +11,7 @@ public class Service implements ServiceInterface{
     private DatabaseInterface database;
 
     @Autowire
-    public void setDatabase(Database database) {
+    public void setDatabase(DatabaseInterface database) {
         this.database = database;
     }
 

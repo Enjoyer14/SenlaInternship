@@ -8,7 +8,7 @@ import com.sental.service.ServiceInterface;
 public class Controller implements ControllerInterface{
 
     @Autowire
-    private final ServiceInterface service = null;
+    private ServiceInterface service = null;
 
     @Override
     public String execute() {

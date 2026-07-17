@@ -14,7 +14,6 @@
     <url>http://maven.apache.org</url>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <liquibase-core.version>4.5.0</liquibase-core.version>
         <postgresql.version>42.7.13</postgresql.version>
         <liquibase-maven-plugin.version>4.5.0</liquibase-maven-plugin.version>

@@ -6,8 +6,12 @@ import com.sental.annotations.Component;
 @Component
 public class Database implements DatabaseInterface {
 
+    private final ParametersHolder parametersHolder;
+
     @Autowire
-    private ParametersHolder parametersHolder;
+    public Database(ParametersHolder parametersHolder) {
+        this.parametersHolder = parametersHolder;
+    }
 
     @Override
     public String execute() {

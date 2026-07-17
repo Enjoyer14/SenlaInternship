@@ -2,6 +2,7 @@ package com.sental.core;
 
 import com.sental.annotations.*;
 
+import com.sental.exceptions.*;
 import org.reflections.Reflections;
 
 import java.io.InputStream;
@@ -49,12 +50,12 @@ public class DIContainer {
         return beans.get(clazz);
     }
 
-    private Object createBean(Class<?> clazz) {
+    private void createBean(Class<?> clazz) {
         if(clazz.isInterface()){
             clazz = findImplementation(clazz);
         }
         if(beans.containsKey(clazz)) {
-            return beans.get(clazz);
+            return;
         }
         try {
             Constructor<?> autowiredConstructor = null;
@@ -70,19 +71,34 @@ public class DIContainer {
                 Class<?>[] paramTypes = autowiredConstructor.getParameterTypes();
                 Object[] params = new Object[paramTypes.length];
                 for (int i = 0; i < paramTypes.length; i++) {
-                    params[i] = createBean(paramTypes[i]);//рекурсия, для каждого параметра создаем бин
+                    createBean(paramTypes[i]);
+                    params[i] = getBean(paramTypes[i]);
                 }
+                boolean isAccessible = autowiredConstructor.isAccessible();
                 autowiredConstructor.setAccessible(true);
-                instance = autowiredConstructor.newInstance(params);
+                try {
+                    autowiredConstructor.setAccessible(true);
+                    instance = autowiredConstructor.newInstance(params);
+                } finally {
+                    if (!isAccessible) {
+                        autowiredConstructor.setAccessible(false);
+                    }
+                }
             } else {
                 Constructor<?> defaultConstructor = clazz.getDeclaredConstructor();
-                defaultConstructor.setAccessible(true);
-                instance = defaultConstructor.newInstance();
+                boolean isAccessible = defaultConstructor.isAccessible();
+                try {
+                    defaultConstructor.setAccessible(true);
+                    instance = defaultConstructor.newInstance();
+                } finally {
+                    if (!isAccessible) {
+                        defaultConstructor.setAccessible(false);
+                    }
+                }
             }
             beans.put(clazz, instance);
-            return instance;
         } catch (Exception e) {
-            throw new RuntimeException("Ошибка создания бина" + e);
+            throw new BeanCreationException("Ошибка создания бина" + e);
         }
     }
 
@@ -92,7 +108,7 @@ public class DIContainer {
                 return clazz;
             }
         }
-        throw new RuntimeException("Не найдена реализация для интерфейса: " + interfaceClass.getName());
+        throw new ImplementationNotFoundException("Не найдена реализация для интерфейса: " + interfaceClass.getName());
     }
 
     private void injectValues(Object instance) {
@@ -101,11 +117,14 @@ public class DIContainer {
                 String key = field.getAnnotation(Value.class).value();
                 String val = properties.getProperty(key);
                 if (val != null) {
+                    boolean isAccessible = field.isAccessible();
                     try {
                         field.setAccessible(true);
                         field.set(instance, val);
                     } catch (Exception e) {
-                        throw new RuntimeException("Ошибка @Value в поле " + field.getName(), e);
+                        throw new PropertyInjectionException("Не удалось внедрить значение свойства '" + key + "' в поле " + field.getName() + " " + e);
+                    } finally {
+                        if(!isAccessible) field.setAccessible(false);
                     }
                 }
             }
@@ -116,11 +135,14 @@ public class DIContainer {
         for (Field field : instance.getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(Autowire.class)) {
                 Object dep = getBean(field.getType());
+                if (dep != null) {
+                    throw new BeanNotFoundException("Не найден бин для внедрения в поле " + field.getName() + " класса " + instance.getClass().getName());
+                }
                 try {
                     field.setAccessible(true);
                     field.set(instance, dep);
                 } catch (Exception e) {
-                    throw new RuntimeException("Ошибка @Autowire в поле " + field.getName(), e);
+                    throw new DependencyInjectionException("Не удалось внедрить зависимость в поле " + field.getName() + " " + e);
                 }
             }
         }
@@ -131,11 +153,14 @@ public class DIContainer {
             if (method.isAnnotationPresent(Autowire.class)) {
                 Class<?> paramType = method.getParameterTypes()[0];
                 Object dep = getBean(paramType);
+                if (dep != null) {
+                    throw new BeanNotFoundException("Не найден бин для внедрения в сеттер " + method.getName() + " класса " + instance.getClass().getName());
+                }
                 try {
                     method.setAccessible(true);
                     method.invoke(instance, dep);
                 } catch (Exception e) {
-                    throw new RuntimeException("Ошибка @Autowire в сеттере " + method.getName(), e);
+                    throw new SetterInjectionException("Не удалось внедрить зависимость через сеттер " + method.getName() + " " + e);
                 }
             }
         }
