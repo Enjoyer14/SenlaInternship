@@ -135,7 +135,7 @@ public class DIContainer {
         for (Field field : instance.getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(Autowire.class)) {
                 Object dep = getBean(field.getType());
-                if (dep != null) {
+                if (dep == null) {
                     throw new BeanNotFoundException("Не найден бин для внедрения в поле " + field.getName() + " класса " + instance.getClass().getName());
                 }
                 try {
@@ -153,7 +153,7 @@ public class DIContainer {
             if (method.isAnnotationPresent(Autowire.class)) {
                 Class<?> paramType = method.getParameterTypes()[0];
                 Object dep = getBean(paramType);
-                if (dep != null) {
+                if (dep == null) {
                     throw new BeanNotFoundException("Не найден бин для внедрения в сеттер " + method.getName() + " класса " + instance.getClass().getName());
                 }
                 try {
