@@ -1,0 +1,6 @@
+CREATE TABLE category
+(
+	id BIGSERIAL PRIMARY KEY,
+	name VARCHAR(255) NOT NULL UNIQUE,
+	parent_id BIGINT REFERENCES category(id)
+);
