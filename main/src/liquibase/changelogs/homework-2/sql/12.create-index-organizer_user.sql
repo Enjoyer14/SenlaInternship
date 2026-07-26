@@ -1,1 +1,0 @@
-CREATE INDEX idx_organizer_user ON organizer(user_id);
