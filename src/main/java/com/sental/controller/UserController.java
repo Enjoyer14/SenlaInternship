@@ -1,5 +1,6 @@
 package com.sental.controller;
 
+import com.sental.exception.EntityNotFound;
 import com.sental.exception.SerializationException;
 import tools.jackson.databind.ObjectMapper;
 import com.sental.dto.request.UserCreateRequest;
@@ -28,8 +29,12 @@ public class UserController {
     }
 
     public String findById(Long id) {
-        UserResponse response = userService.findById(id);
-        return toJson(response);
+        try {
+            UserResponse response = userService.findById(id);
+            return toJson(response);
+        } catch (EntityNotFound e) {
+            return "404 Not Found " + e.getMessage(); // 404 на будущее
+        }
     }
 
     public String findAll() {

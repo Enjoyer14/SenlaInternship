@@ -3,12 +3,13 @@ package com.sental.repository;
 import com.sental.entity.Category;
 import org.springframework.stereotype.Repository;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Repository
 public class CategoryRepository {
 
     private final Map<Long, Category> store = new HashMap<>();
-    private Long id = 1L;
+    private AtomicLong id = new AtomicLong(1);
 
     public Optional<Category> findById(Long id) {
         return Optional.ofNullable(store.get(id));
@@ -20,7 +21,7 @@ public class CategoryRepository {
 
     public Category save(Category category) {
         if (category.getId() == null) {
-            category.setId(id++);
+            category.setId(id.getAndIncrement());
         }
         store.put(category.getId(), category);
         return category;

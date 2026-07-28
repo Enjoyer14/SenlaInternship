@@ -3,6 +3,7 @@ package com.sental.service;
 import com.sental.dto.request.VenueCreateRequest;
 import com.sental.dto.response.VenueResponse;
 import com.sental.entity.Venue;
+import com.sental.exception.EntityNotFound;
 import com.sental.repository.VenueRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,7 +36,7 @@ public class VenueService {
     }
 
     public VenueResponse findById(Long id) {
-        Venue venue = venueRepository.findById(id).orElseThrow(() -> new RuntimeException("Venue not found: " + id));
+        Venue venue = venueRepository.findById(id).orElseThrow(() -> new EntityNotFound("Venue not found: " + id));
         return toResponse(venue);
     }
 
@@ -52,15 +53,15 @@ public class VenueService {
     }
 
     private VenueResponse toResponse(Venue venue) {
-        VenueResponse response = new VenueResponse();
-        response.setId(venue.getId());
-        response.setName(venue.getName());
-        response.setAddress(venue.getAddress());
-        response.setCity(venue.getCity());
-        response.setRegion(venue.getRegion());
-        response.setCapacity(venue.getCapacity());
-        response.setCreatedAt(venue.getCreatedAt());
-        response.setUpdatedAt(venue.getUpdatedAt());
-        return response;
+        return VenueResponse.builder()
+                .id(venue.getId())
+                .name(venue.getName())
+                .address(venue.getAddress())
+                .city(venue.getCity())
+                .region(venue.getRegion())
+                .capacity(venue.getCapacity())
+                .createdAt(venue.getCreatedAt())
+                .updatedAt(venue.getUpdatedAt())
+                .build();
     }
 }

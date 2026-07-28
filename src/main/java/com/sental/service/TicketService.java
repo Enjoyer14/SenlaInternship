@@ -4,6 +4,7 @@ import com.sental.dto.request.TicketCreateRequest;
 import com.sental.dto.response.TicketResponse;
 import com.sental.entity.Ticket;
 import com.sental.enums.TicketStatus;
+import com.sental.exception.EntityNotFound;
 import com.sental.repository.TicketRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,7 +37,7 @@ public class TicketService {
     }
 
     public TicketResponse findById(Long id) {
-        Ticket ticket = ticketRepository.findById(id).orElseThrow(() -> new RuntimeException("Ticket not found: " + id));
+        Ticket ticket = ticketRepository.findById(id).orElseThrow(() -> new EntityNotFound("Ticket not found: " + id));
         return toResponse(ticket);
     }
 
@@ -53,14 +54,14 @@ public class TicketService {
     }
 
     private TicketResponse toResponse(Ticket ticket) {
-        TicketResponse response = new TicketResponse();
-        response.setId(ticket.getId());
-        response.setTicketNumber(ticket.getTicketNumber());
-        response.setUserId(ticket.getUserId());
-        response.setEventId(ticket.getEventId());
-        response.setStatus(ticket.getStatus());
-        response.setPaidAt(ticket.getPaidAt());
-        response.setUpdatedAt(ticket.getUpdatedAt());
-        return response;
+        return TicketResponse.builder()
+                .id(ticket.getId())
+                .ticketNumber(ticket.getTicketNumber())
+                .userId(ticket.getUserId())
+                .eventId(ticket.getEventId())
+                .status(ticket.getStatus())
+                .paidAt(ticket.getPaidAt())
+                .updatedAt(ticket.getUpdatedAt())
+                .build();
     }
 }

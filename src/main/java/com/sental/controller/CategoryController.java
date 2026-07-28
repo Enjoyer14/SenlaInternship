@@ -1,5 +1,6 @@
 package com.sental.controller;
 
+import com.sental.exception.EntityNotFound;
 import com.sental.exception.SerializationException;
 import tools.jackson.databind.ObjectMapper;
 import com.sental.dto.request.CategoryCreateRequest;
@@ -28,8 +29,12 @@ public class CategoryController {
     }
 
     public String findById(Long id) {
-        CategoryResponse response = categoryService.findById(id);
-        return toJson(response);
+        try {
+            CategoryResponse response = categoryService.findById(id);
+            return toJson(response);
+        } catch (EntityNotFound e) {
+            return "404 Not Found " + e.getMessage(); // 404 на будущее
+        }
     }
 
     public String findAll() {

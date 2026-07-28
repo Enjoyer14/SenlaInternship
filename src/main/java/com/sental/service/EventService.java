@@ -4,6 +4,7 @@ import com.sental.dto.request.EventCreateRequest;
 import com.sental.dto.response.EventResponse;
 import com.sental.entity.Event;
 import com.sental.enums.EventStatus;
+import com.sental.exception.EntityNotFound;
 import com.sental.repository.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,7 +40,7 @@ public class EventService {
     }
 
     public EventResponse findById(Long id) {
-        Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found: " + id));
+        Event event = eventRepository.findById(id).orElseThrow(() -> new EntityNotFound("Event not found: " + id));
         return toResponse(event);
     }
 
@@ -56,17 +57,17 @@ public class EventService {
     }
 
     private EventResponse toResponse(Event event) {
-        EventResponse response = new EventResponse();
-        response.setId(event.getId());
-        response.setVenueId(event.getVenueId());
-        response.setTitle(event.getTitle());
-        response.setDescription(event.getDescription());
-        response.setEventDate(event.getEventDate());
-        response.setCapacity(event.getCapacity());
-        response.setBookedSeats(event.getBookedSeats());
-        response.setPrice(event.getPrice());
-        response.setStatus(event.getStatus());
-        response.setCreatedAt(event.getCreatedAt());
-        return response;
+        return EventResponse.builder()
+                .id(event.getId())
+                .venueId(event.getVenueId())
+                .title(event.getTitle())
+                .description(event.getDescription())
+                .eventDate(event.getEventDate())
+                .capacity(event.getCapacity())
+                .bookedSeats(event.getBookedSeats())
+                .price(event.getPrice())
+                .status(event.getStatus())
+                .createdAt(event.getCreatedAt())
+                .build();
     }
 }

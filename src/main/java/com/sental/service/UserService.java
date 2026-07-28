@@ -4,6 +4,7 @@ import com.sental.dto.request.UserCreateRequest;
 import com.sental.dto.response.UserResponse;
 import com.sental.entity.User;
 import com.sental.enums.UserRole;
+import com.sental.exception.EntityNotFound;
 import com.sental.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,7 +36,7 @@ public class UserService {
     }
 
     public UserResponse findById(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found: " + id));
+        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFound("User not found: " + id));
         return toResponse(user);
     }
 
@@ -52,12 +53,12 @@ public class UserService {
     }
 
     private UserResponse toResponse(User user) {
-        UserResponse response = new UserResponse();
-        response.setId(user.getId());
-        response.setEmail(user.getEmail());
-        response.setUsername(user.getUsername());
-        response.setRole(user.getRole());
-        response.setCreatedAt(user.getCreatedAt());
-        return response;
+        return UserResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .role(user.getRole())
+                .createdAt(user.getCreatedAt())
+                .build();
     }
 }

@@ -1,14 +1,16 @@
 package com.sental.repository;
 
 import com.sental.entity.User;
+import liquibase.pro.packaged.A;
 import org.springframework.stereotype.Repository;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Repository
 public class UserRepository {
 
     private final Map<Long, User> store = new HashMap<>();
-    private Long id = 1L;
+    private AtomicLong id = new AtomicLong(1);
 
     public Optional<User> findById(Long id) {
         return Optional.ofNullable(store.get(id));
@@ -20,7 +22,7 @@ public class UserRepository {
 
     public User save(User user) {
         if (user.getId() == null) {
-            user.setId(id++);
+            user.setId(id.getAndIncrement());
         }
         store.put(user.getId(), user);
         return user;

@@ -3,6 +3,7 @@ package com.sental.service;
 import com.sental.dto.request.OrganizerCreateRequest;
 import com.sental.dto.response.OrganizerResponse;
 import com.sental.entity.Organizer;
+import com.sental.exception.EntityNotFound;
 import com.sental.repository.OrganizerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,7 +33,7 @@ public class OrganizerService {
     }
 
     public OrganizerResponse findById(Long id) {
-        Organizer organizer = organizerRepository.findById(id).orElseThrow(() -> new RuntimeException("Organizer not found: " + id));
+        Organizer organizer = organizerRepository.findById(id).orElseThrow(() -> new EntityNotFound("Organizer not found: " + id));
         return toResponse(organizer);
     }
 
@@ -49,12 +50,12 @@ public class OrganizerService {
     }
 
     private OrganizerResponse toResponse(Organizer organizer) {
-        OrganizerResponse response = new OrganizerResponse();
-        response.setId(organizer.getId());
-        response.setUserId(organizer.getUserId());
-        response.setCompanyName(organizer.getCompanyName());
-        response.setDescription(organizer.getDescription());
-        response.setPhone(organizer.getPhone());
-        return response;
+        return OrganizerResponse.builder()
+                .id(organizer.getId())
+                .userId(organizer.getUserId())
+                .companyName(organizer.getCompanyName())
+                .description(organizer.getDescription())
+                .phone(organizer.getPhone())
+                .build();
     }
 }

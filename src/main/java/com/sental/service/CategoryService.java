@@ -3,6 +3,7 @@ package com.sental.service;
 import com.sental.dto.request.CategoryCreateRequest;
 import com.sental.dto.response.CategoryResponse;
 import com.sental.entity.Category;
+import com.sental.exception.EntityNotFound;
 import com.sental.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class CategoryService {
     }
 
     public CategoryResponse findById(Long id) {
-        Category category = categoryRepository.findById(id).orElseThrow(() -> new RuntimeException("Category not found: " + id));
+        Category category = categoryRepository.findById(id).orElseThrow(() -> new EntityNotFound("Category not found: " + id));
         return toResponse(category);
     }
 
@@ -47,10 +48,10 @@ public class CategoryService {
     }
 
     private CategoryResponse toResponse(Category category) {
-        CategoryResponse response = new CategoryResponse();
-        response.setId(category.getId());
-        response.setName(category.getName());
-        response.setParentId(category.getParentId());
-        return response;
+        return CategoryResponse.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .parentId(category.getParentId())
+                .build();
     }
 }
