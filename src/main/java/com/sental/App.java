@@ -5,6 +5,9 @@ import com.sental.dto.request.*;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 @ComponentScan
@@ -26,6 +29,9 @@ public class App {
         demoOrganizer(organizerController);
         demoEvent(eventController);
         demoTicket(ticketController);
+
+        demoThreads(eventController);
+        demoRollback(eventController);
 
         ctx.close();
     }
@@ -216,5 +222,56 @@ public class App {
         String remaining = ticketController.findAll();
         System.out.println("All: " + remaining);
         System.out.println();
+    }
+
+    private static void demoThreads(EventController eventController) {
+        System.out.println("THREAD");
+        List<Thread> threads = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            Thread thread = new Thread(() -> {
+                EventCreateRequest request = EventCreateRequest.builder()
+                        .venueId(1L)
+                        .title("Thread event " + Thread.currentThread().getName())
+                        .description("demo")
+                        .eventDate(LocalDateTime.now())
+                        .capacity(100)
+                        .price(100.0)
+                        .build();
+                String json = eventController.createWithCategories(request, List.of(1L, 2L));
+                System.out.println(Thread.currentThread().getName() + ": " + json);
+            });
+            thread.setName("worker-" + i);
+            threads.add(thread);
+        }
+
+        for (Thread thread : threads) {
+            thread.start();
+        }
+
+        for (Thread thread : threads) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        System.out.println("Thread demo finish");
+    }
+
+    private static void demoRollback(EventController eventController) {
+        System.out.println("ROLLBACK DEMO");
+        EventCreateRequest request = EventCreateRequest.builder()
+                .venueId(1L)
+                .title("Rollback event " + Thread.currentThread().getName())
+                .description("demo")
+                .eventDate(LocalDateTime.now())
+                .capacity(100)
+                .price(100.0)
+                .build();
+        try {
+            eventController.createWithCategories(request, List.of(999L));
+        } catch (RuntimeException e) {
+            System.out.println("Rollback demo: " + e.getMessage());
+        }
     }
 }

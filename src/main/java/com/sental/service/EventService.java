@@ -1,5 +1,6 @@
 package com.sental.service;
 
+import com.sental.annotation.Transaction;
 import com.sental.dto.request.EventCreateRequest;
 import com.sental.dto.response.EventResponse;
 import com.sental.entity.Event;
@@ -24,18 +25,18 @@ public class EventService {
     }
 
     public EventResponse create(EventCreateRequest request) {
-        Event event = new Event();
-        event.setVenueId(request.getVenueId());
-        event.setTitle(request.getTitle());
-        event.setDescription(request.getDescription());
-        event.setEventDate(request.getEventDate());
-        event.setCapacity(request.getCapacity());
-        event.setPrice(request.getPrice());
-        event.setBookedSeats(0);
-        event.setStatus(EventStatus.PUBLISHED);
-        event.setCreatedAt(LocalDateTime.now());
+        Event saved = eventRepository.save(toEntity(request));
+        return toResponse(saved);
+    }
 
-        Event saved = eventRepository.save(event);
+    @Transaction
+    public EventResponse createWithCategories(EventCreateRequest request, List<Long> categoryIds) {
+        Event saved = eventRepository.save(toEntity(request));
+        if (categoryIds != null) {
+            for (Long categoryId : categoryIds) {
+                eventRepository.addCategory(saved.getId(), categoryId);
+            }
+        }
         return toResponse(saved);
     }
 
@@ -54,6 +55,20 @@ public class EventService {
 
     public void delete(Long id) {
         eventRepository.delete(id);
+    }
+
+    private Event toEntity(EventCreateRequest request) {
+        return Event.builder()
+                .venueId(request.getVenueId())
+                .title(request.getTitle())
+                .description(request.getDescription())
+                .eventDate(request.getEventDate())
+                .capacity(request.getCapacity())
+                .price(request.getPrice())
+                .bookedSeats(0)
+                .status(EventStatus.PUBLISHED)
+                .createdAt(LocalDateTime.now())
+                .build();
     }
 
     private EventResponse toResponse(Event event) {

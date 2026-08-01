@@ -28,6 +28,11 @@ public class EventController {
         return toJson(response);
     }
 
+    public String createWithCategories(EventCreateRequest request, List<Long> categoryIds) {
+        EventResponse response = eventService.createWithCategories(request, categoryIds);
+        return toJson(response);
+    }
+
     public String findById(Long id) {
         try {
             EventResponse response = eventService.findById(id);
