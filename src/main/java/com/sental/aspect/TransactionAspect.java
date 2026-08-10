@@ -47,6 +47,10 @@ public class TransactionAspect {
                 rollbackTransaction(connection);
             }
             throw e;
+        } finally {
+            if (startedHere) {
+                connectionHolder.releaseCurrentThread();
+            }
         }
     }
 

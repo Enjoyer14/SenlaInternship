@@ -53,6 +53,7 @@ public class EventService {
         return result;
     }
 
+    @Transaction
     public void delete(Long id) {
         eventRepository.delete(id);
     }
