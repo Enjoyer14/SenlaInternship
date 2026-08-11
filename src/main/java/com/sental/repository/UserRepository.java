@@ -1,7 +1,6 @@
 package com.sental.repository;
 
 import com.sental.entity.User;
-import liquibase.pro.packaged.A;
 import org.springframework.stereotype.Repository;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;

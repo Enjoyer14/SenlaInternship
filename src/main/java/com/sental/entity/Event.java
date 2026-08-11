@@ -1,15 +1,15 @@
 package com.sental.entity;
 
 import com.sental.enums.EventStatus;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class Event {
     private Long id;
     private Long venueId;
