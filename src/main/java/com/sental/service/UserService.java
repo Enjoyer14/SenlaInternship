@@ -8,6 +8,7 @@ import com.sental.exception.EntityNotFound;
 import com.sental.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
+    @Transactional
     public UserResponse create(UserCreateRequest request) {
         User user = new User();
         user.setEmail(request.getEmail());
@@ -35,11 +37,13 @@ public class UserService {
         return toResponse(saved);
     }
 
+    @Transactional(readOnly = true)
     public UserResponse findById(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFound("User not found: " + id));
         return toResponse(user);
     }
 
+    @Transactional(readOnly = true)
     public List<UserResponse> findAll() {
         List<UserResponse> result = new ArrayList<>();
         for (User user : userRepository.findAll()) {
@@ -48,8 +52,9 @@ public class UserService {
         return result;
     }
 
+    @Transactional
     public void delete(Long id) {
-        userRepository.delete(id);
+        userRepository.deleteById(id);
     }
 
     private UserResponse toResponse(User user) {

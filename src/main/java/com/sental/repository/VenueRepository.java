@@ -1,33 +1,19 @@
 package com.sental.repository;
 
 import com.sental.entity.Venue;
+import jakarta.persistence.TypedQuery;
 import org.springframework.stereotype.Repository;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
+
+import java.util.List;
 
 @Repository
-public class VenueRepository {
+public class VenueRepository extends AbstractDao<Venue, Long> {
 
-    private final Map<Long, Venue> store = new HashMap<>();
-    private AtomicLong id = new AtomicLong(1);
-
-    public Optional<Venue> findById(Long id) {
-        return Optional.ofNullable(store.get(id));
-    }
-
-    public List<Venue> findAll() {
-        return new ArrayList<>(store.values());
-    }
-
-    public Venue save(Venue venue) {
-        if (venue.getId() == null) {
-            venue.setId(id.getAndIncrement());
-        }
-        store.put(venue.getId(), venue);
-        return venue;
-    }
-
-    public void delete(Long id) {
-        store.remove(id);
+    public List<Venue> findByCity(String city) {
+        TypedQuery<Venue> query = entityManager.createQuery(
+                "select v from Venue v where v.city = :city",
+                Venue.class);
+        query.setParameter("city", city);
+        return query.getResultList();
     }
 }

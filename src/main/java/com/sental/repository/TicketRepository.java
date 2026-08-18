@@ -1,33 +1,24 @@
 package com.sental.repository;
 
 import com.sental.entity.Ticket;
+import com.sental.entity.Ticket_;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 import org.springframework.stereotype.Repository;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
+
+import java.util.List;
 
 @Repository
-public class TicketRepository {
+public class TicketRepository extends AbstractDao<Ticket, Long> {
 
-    private final Map<Long, Ticket> store = new HashMap<>();
-    private AtomicLong id = new AtomicLong(1);
+    public List<Ticket> findByUserId(Long userId) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Ticket> query = cb.createQuery(Ticket.class);
+        Root<Ticket> root = query.from(Ticket.class);
 
-    public Optional<Ticket> findById(Long id) {
-        return Optional.ofNullable(store.get(id));
-    }
+        query.select(root).where(cb.equal(root.get(Ticket_.userId), userId));
 
-    public List<Ticket> findAll() {
-        return new ArrayList<>(store.values());
-    }
-
-    public Ticket save(Ticket ticket) {
-        if (ticket.getId() == null) {
-            ticket.setId(id.getAndIncrement());
-        }
-        store.put(ticket.getId(), ticket);
-        return ticket;
-    }
-
-    public void delete(Long id) {
-        store.remove(id);
+        return entityManager.createQuery(query).getResultList();
     }
 }

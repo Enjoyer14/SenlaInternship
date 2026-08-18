@@ -7,6 +7,7 @@ import com.sental.exception.EntityNotFound;
 import com.sental.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,20 +22,26 @@ public class CategoryService {
         this.categoryRepository = categoryRepository;
     }
 
+    @Transactional
     public CategoryResponse create(CategoryCreateRequest request) {
         Category category = new Category();
         category.setName(request.getName());
-        category.setParentId(request.getParentId());
+        if (request.getParentId() != null) {
+            Category parent = categoryRepository.findById(request.getParentId()).orElseThrow(() -> new EntityNotFound("Category not found: " + request.getParentId()));
+            category.setParent(parent);
+        }
 
         Category saved = categoryRepository.save(category);
         return toResponse(saved);
     }
 
+    @Transactional(readOnly = true)
     public CategoryResponse findById(Long id) {
         Category category = categoryRepository.findById(id).orElseThrow(() -> new EntityNotFound("Category not found: " + id));
         return toResponse(category);
     }
 
+    @Transactional(readOnly = true)
     public List<CategoryResponse> findAll() {
         List<CategoryResponse> result = new ArrayList<>();
         for (Category category : categoryRepository.findAll()) {
@@ -43,15 +50,16 @@ public class CategoryService {
         return result;
     }
 
+    @Transactional
     public void delete(Long id) {
-        categoryRepository.delete(id);
+        categoryRepository.deleteById(id);
     }
 
     private CategoryResponse toResponse(Category category) {
         return CategoryResponse.builder()
                 .id(category.getId())
                 .name(category.getName())
-                .parentId(category.getParentId())
+                .parentId(category.getParent() == null ? null : category.getParent().getId())
                 .build();
     }
 }
