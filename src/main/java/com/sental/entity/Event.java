@@ -6,8 +6,8 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @NamedEntityGraph(
     name = "Event.withAssociations",
@@ -68,7 +68,7 @@ public class Event {
         joinColumns = @JoinColumn(name = "event_id"),
         inverseJoinColumns = @JoinColumn(name = "category_id")
     )
-    private Set<Category> categories = new HashSet<>();
+    private List<Category> categories = new ArrayList<>();
 
     @Builder.Default
     @ElementCollection(fetch = FetchType.LAZY)
@@ -77,5 +77,5 @@ public class Event {
         joinColumns = @JoinColumn(name = "event_id")
     )
     @Column(name = "organizer_id")
-    private Set<Long> organizerIds = new HashSet<>();
+    private List<Long> organizerIds = new ArrayList<>();
 }

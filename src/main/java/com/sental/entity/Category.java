@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "category")
@@ -26,8 +26,8 @@ public class Category {
     private Category parent;
 
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
-    private Set<Category> children = new HashSet<>();
+    private List<Category> children = new ArrayList<>();
 
     @ManyToMany(mappedBy = "categories", fetch = FetchType.LAZY)
-    private Set<Event> events = new HashSet<>();
+    private List<Event> events = new ArrayList<>();
 }

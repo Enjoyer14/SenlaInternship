@@ -6,8 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "venue")
@@ -41,5 +41,5 @@ public class Venue {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "venue", fetch = FetchType.LAZY)
-    private Set<Event> events = new HashSet<>();
+    private List<Event> events = new ArrayList<>();
 }
