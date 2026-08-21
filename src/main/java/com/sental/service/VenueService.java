@@ -7,6 +7,7 @@ import com.sental.exception.EntityNotFound;
 import com.sental.repository.VenueRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ public class VenueService {
         this.venueRepository = venueRepository;
     }
 
+    @Transactional
     public VenueResponse create(VenueCreateRequest request) {
         Venue venue = new Venue();
         venue.setName(request.getName());
@@ -35,11 +37,13 @@ public class VenueService {
         return toResponse(saved);
     }
 
+    @Transactional(readOnly = true)
     public VenueResponse findById(Long id) {
         Venue venue = venueRepository.findById(id).orElseThrow(() -> new EntityNotFound("Venue not found: " + id));
         return toResponse(venue);
     }
 
+    @Transactional(readOnly = true)
     public List<VenueResponse> findAll() {
         List<VenueResponse> result = new ArrayList<>();
         for (Venue venue : venueRepository.findAll()) {
@@ -48,8 +52,9 @@ public class VenueService {
         return result;
     }
 
+    @Transactional
     public void delete(Long id) {
-        venueRepository.delete(id);
+        venueRepository.deleteById(id);
     }
 
     private VenueResponse toResponse(Venue venue) {

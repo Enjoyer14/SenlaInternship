@@ -1,33 +1,37 @@
 package com.sental.repository;
 
 import com.sental.entity.User;
+import com.sental.entity.User_;
+import com.sental.enums.UserRole;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 import org.springframework.stereotype.Repository;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
+
+import java.util.List;
+import java.util.Optional;
 
 @Repository
-public class UserRepository {
-
-    private final Map<Long, User> store = new HashMap<>();
-    private AtomicLong id = new AtomicLong(1);
-
-    public Optional<User> findById(Long id) {
-        return Optional.ofNullable(store.get(id));
+public class UserRepository extends AbstractDao<User, Long> {
+    public Optional<User> findByUsername(String username) {
+        TypedQuery<User> query = entityManager.createQuery(
+                "select u from User u where u.username = :username",
+                User.class);
+        query.setParameter("username", username);
+        return query.getResultStream().findFirst();
     }
 
-    public List<User> findAll() {
-        return new ArrayList<>(store.values());
-    }
+    public List<User> findByRoleAndEmail(UserRole role, String email) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<User> query = cb.createQuery(User.class);
+        Root<User> root = query.from(User.class);
 
-    public User save(User user) {
-        if (user.getId() == null) {
-            user.setId(id.getAndIncrement());
-        }
-        store.put(user.getId(), user);
-        return user;
-    }
+        query.select(root).where(cb.and(
+                cb.equal(root.get(User_.role), role),
+                cb.equal(root.get(User_.email), email)
+        ));
 
-    public void delete(Long id) {
-        store.remove(id);
+        return entityManager.createQuery(query).getResultList();
     }
 }

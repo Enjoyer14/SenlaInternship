@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -13,20 +14,24 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>23</maven.compiler.release>
         <liquibase-core.version>4.5.0</liquibase-core.version>
         <postgresql.version>42.7.13</postgresql.version>
         <liquibase-maven-plugin.version>4.5.0</liquibase-maven-plugin.version>
-        <aspectjweaver.version>1.9.25.1</aspectjweaver.version>
         <spring-core.version>7.0.8</spring-core.version>
         <spring-context.version>7.0.8</spring-context.version>
-        <junit.version>3.8.1</junit.version>
         <spring-beans.version>7.0.8</spring-beans.version>
+        <spring-test.version>7.0.8</spring-test.version>
         <jackson-databind.version>3.2.1</jackson-databind.version>
         <jackson-datatype.version>3.0.0-rc2</jackson-datatype.version>
         <lombok.version>1.18.36</lombok.version>
         <jdk.version>23</jdk.version>
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
-        <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
+        <spring-orm.version>7.0.8</spring-orm.version>
+        <hibernate-core.version>7.2.1.Final</hibernate-core.version>
+        <hibernate-processor.version>7.4.5.Final</hibernate-processor.version>
+        <junit-jupiter.version>6.0.2</junit-jupiter.version>
+        <h2.version>2.3.232</h2.version>
     </properties>
 
     <dependencies>
@@ -49,12 +54,6 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
             <version>${liquibase-core.version}</version>
@@ -64,12 +63,6 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>${postgresql.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjweaver</artifactId>
-            <version>${aspectjweaver.version}</version>
             <scope>compile</scope>
         </dependency>
         <!-- Source: https://mvnrepository.com/artifact/tools.jackson.core/jackson-databind -->
@@ -100,10 +93,43 @@
             <version>${lombok.version}</version>
             <scope>compile</scope>
         </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/org.springframework/spring-orm -->
         <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
-            <version>${javax.annotation-api.version}</version>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-orm</artifactId>
+            <version>${spring-orm.version}</version>
+        </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/org.hibernate.orm/hibernate-core -->
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>${hibernate-core.version}</version>
+        </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/org.hibernate.orm/hibernate-processor -->
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-processor</artifactId>
+            <version>${hibernate-processor.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Tests -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>${spring-test.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -121,6 +147,11 @@
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                             <version>${lombok.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.hibernate.orm</groupId>
+                            <artifactId>hibernate-processor</artifactId>
+                            <version>${hibernate-processor.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
