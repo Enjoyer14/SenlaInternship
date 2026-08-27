@@ -1,4 +1,4 @@
-package com.sental.dto.request;
+package com.sental.dto.request.create;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

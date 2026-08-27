@@ -1,56 +1,51 @@
 package com.sental.controller;
 
-import com.sental.exception.EntityNotFound;
-import com.sental.exception.SerializationException;
-import tools.jackson.databind.ObjectMapper;
-import com.sental.dto.request.OrganizerCreateRequest;
+import com.sental.dto.request.update.OrganizerUpdateRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import com.sental.dto.request.create.OrganizerCreateRequest;
 import com.sental.dto.response.OrganizerResponse;
 import com.sental.service.OrganizerService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Component
+@RestController
+@RequestMapping("/organizers")
 public class OrganizerController {
-
     private final OrganizerService organizerService;
-    private final ObjectMapper objectMapper;
 
     @Autowired
-    public OrganizerController(OrganizerService organizerService, ObjectMapper objectMapper) {
+    public OrganizerController(OrganizerService organizerService) {
         this.organizerService = organizerService;
-        this.objectMapper = objectMapper;
     }
 
-    public String create(OrganizerCreateRequest request) {
-        OrganizerResponse response = organizerService.create(request);
-        return toJson(response);
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public OrganizerResponse create(@RequestBody OrganizerCreateRequest request) {
+        return organizerService.create(request);
     }
 
-    public String findById(Long id) {
-        try {
-            OrganizerResponse response = organizerService.findById(id);
-            return toJson(response);
-        } catch (EntityNotFound e) {
-            return "404 Not Found " + e.getMessage(); // 404 на будущее
-        }
+    @GetMapping("/{id}")
+    public OrganizerResponse findById(@PathVariable("id") Long id) {
+        return organizerService.findById(id);
+
     }
 
-    public String findAll() {
-        List<OrganizerResponse> list = organizerService.findAll();
-        return toJson(list);
+    @GetMapping
+    public List<OrganizerResponse> findAll() {
+        return organizerService.findAll();
     }
 
-    public void delete(Long id) {
+    @PutMapping("/{id}")
+    public OrganizerResponse update(@PathVariable("id") Long id, @RequestBody OrganizerUpdateRequest request) {
+        return organizerService.update(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable("id") Long id) {
         organizerService.delete(id);
     }
 
-    private String toJson(Object obj) {
-        try {
-            return objectMapper.writeValueAsString(obj);
-        } catch (RuntimeException e) {
-            throw new SerializationException("fail to create json" + e);
-        }
-    }
 }

@@ -1,56 +1,50 @@
 package com.sental.controller;
 
-import com.sental.exception.EntityNotFound;
-import com.sental.exception.SerializationException;
-import tools.jackson.databind.ObjectMapper;
-import com.sental.dto.request.VenueCreateRequest;
+import com.sental.dto.request.update.VenueUpdateRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import com.sental.dto.request.create.VenueCreateRequest;
 import com.sental.dto.response.VenueResponse;
 import com.sental.service.VenueService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Component
+@RestController
+@RequestMapping("/venues")
 public class VenueController {
-
     private final VenueService venueService;
-    private final ObjectMapper objectMapper;
 
     @Autowired
-    public VenueController(VenueService venueService, ObjectMapper objectMapper) {
+    public VenueController(VenueService venueService) {
         this.venueService = venueService;
-        this.objectMapper = objectMapper;
     }
 
-    public String create(VenueCreateRequest request) {
-        VenueResponse response = venueService.create(request);
-        return toJson(response);
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public VenueResponse create(@RequestBody VenueCreateRequest request) {
+        return venueService.create(request);
     }
 
-    public String findById(Long id) {
-        try {
-            VenueResponse response = venueService.findById(id);
-            return toJson(response);
-        } catch (EntityNotFound e) {
-            return "404 Not Found " + e.getMessage(); // 404 на будущее
-        }
+    @GetMapping("/{id}")
+    public VenueResponse findById(@PathVariable("id") Long id) {
+        return venueService.findById(id);
     }
 
-    public String findAll() {
-        List<VenueResponse> list = venueService.findAll();
-        return toJson(list);
+    @GetMapping()
+    public List<VenueResponse> findAll() {
+        return venueService.findAll();
     }
 
-    public void delete(Long id) {
+    @PutMapping("/{id}")
+    public VenueResponse update(@PathVariable("id") Long id, @RequestBody VenueUpdateRequest request) {
+        return venueService.update(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable("id") Long id) {
         venueService.delete(id);
     }
 
-    private String toJson(Object obj) {
-        try {
-            return objectMapper.writeValueAsString(obj);
-        } catch (RuntimeException e) {
-            throw new SerializationException("fail to create json" + e);
-        }
-    }
 }

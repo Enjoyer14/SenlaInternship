@@ -1,13 +1,11 @@
-package com.sental.dto.request;
+package com.sental.dto.request.update;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
-public class UserCreateRequest {
+public class UserUpdateRequest {
     private String email;
     private String username;
     private String password;
