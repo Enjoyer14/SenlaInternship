@@ -66,7 +66,7 @@ public class TicketService {
 
     @Transactional
     public void delete(Long id) {
-        Ticket ticket = ticketRepository.findById(id).orElseThrow(() -> new EntityNotFound("Ticket not found"));
+        Ticket ticket = ticketRepository.findById(id).orElseThrow(() -> new EntityNotFound("Ticket not found: " + id));
         ticketRepository.delete(ticket);
     }
 
