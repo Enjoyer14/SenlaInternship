@@ -26,13 +26,10 @@ public class EventController {
         return eventService.create(request);
     }
 
-// TODO
-//    @PostMapping("/{eventId}/categories")
-//    public EventResponse addCategories(
-//            @PathVariable Long eventId,
-//            @RequestBody List<Long> categoryIds) {
-//        return eventService.addCategories(eventId, categoryIds);
-//    }
+    @PostMapping("/{eventId}/categories")
+    public EventResponse addCategories(@PathVariable Long eventId, @RequestBody List<Long> categoryIds) {
+        return eventService.addCategories(eventId, categoryIds);
+    }
 
     @GetMapping("/{id}")
     public EventResponse findById(@PathVariable("id") Long id) {

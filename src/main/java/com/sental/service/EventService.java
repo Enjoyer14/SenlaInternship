@@ -40,18 +40,18 @@ public class EventService {
         return toResponse(saved);
     }
 
-// TODO
-//    @Transactional
-//    public EventResponse addCategories(EventCreateRequest request, List<Long> categoryIds) {
-//        Event saved = eventRepository.save(toEntity(request));
-//        if (categoryIds != null) {
-//            for (Long categoryId : categoryIds) {
-//                Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new EntityNotFound("Category not found: " + categoryId));
-//                saved.getCategories().add(category);
-//            }
-//        }
-//        return toResponse(saved);
-//    }
+    @Transactional
+    public EventResponse addCategories(Long eventId, List<Long> categoryIds) {
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new EntityNotFound("Event not found: " + eventId));
+        if (categoryIds != null) {
+            for (Long categoryId : categoryIds) {
+                Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new EntityNotFound("Category not found: " + categoryId));
+                event.getCategories().add(category);
+            }
+        }
+        Event saved = eventRepository.save(event);
+        return toResponse(saved);
+    }
 
     @Transactional(readOnly = true)
     public EventResponse findById(Long id) {
