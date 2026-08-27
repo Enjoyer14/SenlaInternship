@@ -56,9 +56,6 @@ public class VenueService {
     public VenueResponse update(Long id, VenueUpdateRequest request) {
         Venue venue = venueRepository.findById(id).orElseThrow(() -> new EntityNotFound("Venue not found: " + id));
 
-        //TODO
-        //ILLEGAL ARGUMENT EXCEPTION request
-
         venue.setName(request.getName());
         venue.setAddress(request.getAddress());
         venue.setCity(request.getCity());
