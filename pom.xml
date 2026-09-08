@@ -7,7 +7,7 @@
     <artifactId>main</artifactId>
     <version>1.0-SNAPSHOT</version>
 
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
 
     <name>main</name>
     <url>http://maven.apache.org</url>
@@ -22,8 +22,8 @@
         <spring-context.version>7.0.8</spring-context.version>
         <spring-beans.version>7.0.8</spring-beans.version>
         <spring-test.version>7.0.8</spring-test.version>
-        <jackson-databind.version>3.2.1</jackson-databind.version>
-        <jackson-datatype.version>3.0.0-rc2</jackson-datatype.version>
+        <jackson-databind.version>2.18.2</jackson-databind.version>
+        <jackson-datatype.version>2.18.2</jackson-datatype.version>
         <lombok.version>1.18.36</lombok.version>
         <jdk.version>23</jdk.version>
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
@@ -32,6 +32,12 @@
         <hibernate-processor.version>7.4.5.Final</hibernate-processor.version>
         <junit-jupiter.version>6.0.2</junit-jupiter.version>
         <h2.version>2.3.232</h2.version>
+        <spring-webmvc.version>7.0.8</spring-webmvc.version>
+        <jakarta.servlet-api.version>6.1.0</jakarta.servlet-api.version>
+        <maven-war-plugin.version>3.5.1</maven-war-plugin.version>
+        <mockito-core.version>5.23.0</mockito-core.version>
+        <mockito-junit-jupiter.version>5.23.0</mockito-junit-jupiter.version>
+        <hamcrest.version>3.0</hamcrest.version>
     </properties>
 
     <dependencies>
@@ -67,25 +73,19 @@
         </dependency>
         <!-- Source: https://mvnrepository.com/artifact/tools.jackson.core/jackson-databind -->
         <dependency>
-            <groupId>tools.jackson.core</groupId>
+            <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson-databind.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <!-- Source: https://mvnrepository.com/artifact/tools.jackson.core/jackson-core -->
-        <dependency>
-            <groupId>tools.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
             <version>${jackson-databind.version}</version>
             <scope>compile</scope>
         </dependency>
         <!-- Source: https://mvnrepository.com/artifact/tools.jackson.datatype/jackson-datatype-jsr310 -->
         <dependency>
-            <groupId>tools.jackson.datatype</groupId>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>${jackson-datatype.version}</version>
             <scope>compile</scope>
         </dependency>
+
         <!-- Source: https://mvnrepository.com/artifact/org.projectlombok/lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -131,6 +131,48 @@
             <version>${h2.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/org.mockito/mockito-core -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito-core.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${mockito-junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/org.springframework/spring-webmvc -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>${spring-webmvc.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/jakarta.servlet/jakarta.servlet-api -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>${jakarta.servlet-api.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/org.hamcrest/hamcrest -->
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <version>${hamcrest.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/com.jayway.jsonpath/json-path -->
+        <dependency>
+            <groupId>com.jayway.jsonpath</groupId>
+            <artifactId>json-path</artifactId>
+            <version>3.0.0</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -155,6 +197,11 @@
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>${maven-war-plugin.version}</version>
             </plugin>
         </plugins>
         <resources>

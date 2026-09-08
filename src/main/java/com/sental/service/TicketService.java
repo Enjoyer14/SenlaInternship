@@ -1,6 +1,7 @@
 package com.sental.service;
 
-import com.sental.dto.request.TicketCreateRequest;
+import com.sental.dto.request.create.TicketCreateRequest;
+import com.sental.dto.request.update.TicketUpdateRequest;
 import com.sental.dto.response.TicketResponse;
 import com.sental.entity.Ticket;
 import com.sental.enums.TicketStatus;
@@ -17,7 +18,6 @@ import java.util.UUID;
 
 @Service
 public class TicketService {
-
     private final TicketRepository ticketRepository;
 
     @Autowired
@@ -54,8 +54,20 @@ public class TicketService {
     }
 
     @Transactional
+    public TicketResponse update(Long id, TicketUpdateRequest request) {
+        Ticket ticket = ticketRepository.findById(id).orElseThrow(() -> new EntityNotFound("Ticket not found: " + id));
+
+        ticket.setStatus(request.getStatus());
+        ticket.setUpdatedAt(LocalDateTime.now());
+
+        Ticket updated = ticketRepository.save(ticket);
+        return toResponse(updated);
+    }
+
+    @Transactional
     public void delete(Long id) {
-        ticketRepository.deleteById(id);
+        Ticket ticket = ticketRepository.findById(id).orElseThrow(() -> new EntityNotFound("Ticket not found: " + id));
+        ticketRepository.delete(ticket);
     }
 
     private TicketResponse toResponse(Ticket ticket) {

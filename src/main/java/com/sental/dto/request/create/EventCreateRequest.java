@@ -1,9 +1,10 @@
-package com.sental.dto.request;
+package com.sental.dto.request.create;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Setter
 @Getter
@@ -19,4 +20,5 @@ public class EventCreateRequest {
     private Integer capacity;
     private Double price;
 
+    private List<Long> categoryIds;
 }

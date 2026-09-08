@@ -1,6 +1,7 @@
 package com.sental.service;
 
-import com.sental.dto.request.OrganizerCreateRequest;
+import com.sental.dto.request.create.OrganizerCreateRequest;
+import com.sental.dto.request.update.OrganizerUpdateRequest;
 import com.sental.dto.response.OrganizerResponse;
 import com.sental.entity.Organizer;
 import com.sental.entity.User;
@@ -57,8 +58,23 @@ public class OrganizerService {
     }
 
     @Transactional
+    public OrganizerResponse update(Long id, OrganizerUpdateRequest request) {
+        Organizer organizer = organizerRepository.findById(id).orElseThrow(() -> new EntityNotFound("Organizer not found: " + id));
+
+        organizer.setCompanyName(request.getCompanyName());
+        organizer.setDescription(request.getDescription());
+        organizer.setPhone(request.getPhone());
+
+        Organizer updated = organizerRepository.save(organizer);
+
+
+        return toResponse(updated);
+    }
+
+    @Transactional
     public void delete(Long id) {
-        organizerRepository.deleteById(id);
+        Organizer organizer = organizerRepository.findById(id).orElseThrow(() -> new EntityNotFound("Organizer not found: " + id));
+        organizerRepository.delete(organizer);
     }
 
     private OrganizerResponse toResponse(Organizer organizer) {

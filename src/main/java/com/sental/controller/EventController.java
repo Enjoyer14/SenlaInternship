@@ -1,61 +1,55 @@
 package com.sental.controller;
 
-import com.sental.exception.EntityNotFound;
-import com.sental.exception.SerializationException;
-import tools.jackson.databind.ObjectMapper;
-import com.sental.dto.request.EventCreateRequest;
+import com.sental.dto.request.update.EventUpdateRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import com.sental.dto.request.create.EventCreateRequest;
 import com.sental.dto.response.EventResponse;
 import com.sental.service.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Component
+@RestController
+@RequestMapping("/events")
 public class EventController {
-
     private final EventService eventService;
-    private final ObjectMapper objectMapper;
 
     @Autowired
-    public EventController(EventService eventService, ObjectMapper objectMapper) {
+    public EventController(EventService eventService) {
         this.eventService = eventService;
-        this.objectMapper = objectMapper;
     }
 
-    public String create(EventCreateRequest request) {
-        EventResponse response = eventService.create(request);
-        return toJson(response);
+    @PostMapping()
+    @ResponseStatus(HttpStatus.CREATED)
+    public EventResponse create(@RequestBody EventCreateRequest request) {
+        return eventService.create(request);
     }
 
-    public String createWithCategories(EventCreateRequest request, List<Long> categoryIds) {
-        EventResponse response = eventService.createWithCategories(request, categoryIds);
-        return toJson(response);
+    @PostMapping("/{eventId}/categories")
+    public EventResponse addCategories(@PathVariable Long eventId, @RequestBody List<Long> categoryIds) {
+        return eventService.addCategories(eventId, categoryIds);
     }
 
-    public String findById(Long id) {
-        try {
-            EventResponse response = eventService.findById(id);
-            return toJson(response);
-        } catch (EntityNotFound e) {
-            return "404 Not Found " + e.getMessage(); // 404 на будущее
-        }
+    @GetMapping("/{id}")
+    public EventResponse findById(@PathVariable("id") Long id) {
+        return eventService.findById(id);
     }
 
-    public String findAll() {
-        List<EventResponse> list = eventService.findAll();
-        return toJson(list);
+    @GetMapping()
+    public List<EventResponse> findAll() {
+        return eventService.findAll();
     }
 
-    public void delete(Long id) {
+    @PutMapping("/{id}")
+    public EventResponse update(@PathVariable("id") Long id, @RequestBody EventUpdateRequest request) {
+        return eventService.update(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable("id") Long id) {
         eventService.delete(id);
     }
 
-    private String toJson(Object obj) {
-        try {
-            return objectMapper.writeValueAsString(obj);
-        } catch (RuntimeException e) {
-            throw new SerializationException("fail to create json" + e);
-        }
-    }
 }

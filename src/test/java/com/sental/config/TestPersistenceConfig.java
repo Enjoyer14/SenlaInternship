@@ -16,7 +16,10 @@ import java.util.Properties;
 
 @Configuration
 @EnableTransactionManagement
-@ComponentScan(basePackages = "com.sental.repository")
+@ComponentScan(basePackages = {
+        "com.sental.repository",
+        "com.sental.service"
+})
 public class TestPersistenceConfig {
     @Bean
     public DataSource dataSource() {

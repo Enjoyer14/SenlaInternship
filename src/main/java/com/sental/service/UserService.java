@@ -1,6 +1,7 @@
 package com.sental.service;
 
-import com.sental.dto.request.UserCreateRequest;
+import com.sental.dto.request.create.UserCreateRequest;
+import com.sental.dto.request.update.UserUpdateRequest;
 import com.sental.dto.response.UserResponse;
 import com.sental.entity.User;
 import com.sental.enums.UserRole;
@@ -16,7 +17,6 @@ import java.util.List;
 
 @Service
 public class UserService {
-
     private final UserRepository userRepository;
 
     @Autowired
@@ -53,8 +53,21 @@ public class UserService {
     }
 
     @Transactional
+    public UserResponse update(Long id, UserUpdateRequest request) {
+        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFound("User not found: " + id));
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPasswordHash(request.getPassword());
+        user.setUpdatedAt(LocalDateTime.now());
+
+        User updated = userRepository.save(user);
+        return toResponse(updated);
+    }
+
+    @Transactional
     public void delete(Long id) {
-        userRepository.deleteById(id);
+        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFound("User not found: " + id));
+        userRepository.delete(user);
     }
 
     private UserResponse toResponse(User user) {

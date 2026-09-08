@@ -1,16 +1,12 @@
-package com.sental.dto.request;
+package com.sental.dto.request.update;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
-public class OrganizerCreateRequest {
-    private Long userId;
+public class OrganizerUpdateRequest {
     private String companyName;
     private String description;
     private String phone;
-
 }

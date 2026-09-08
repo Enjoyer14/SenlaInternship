@@ -1,6 +1,7 @@
 package com.sental.service;
 
-import com.sental.dto.request.CategoryCreateRequest;
+import com.sental.dto.request.create.CategoryCreateRequest;
+import com.sental.dto.request.update.CategoryUpdateRequest;
 import com.sental.dto.response.CategoryResponse;
 import com.sental.entity.Category;
 import com.sental.exception.EntityNotFound;
@@ -51,8 +52,23 @@ public class CategoryService {
     }
 
     @Transactional
+    public CategoryResponse update(Long id, CategoryUpdateRequest request) {
+        Category category = categoryRepository.findById(id).orElseThrow(() -> new EntityNotFound("Category not found: " + id));
+        category.setName(request.getName());
+        if (request.getParentId() != null) {
+            Category parent = categoryRepository.findById(request.getParentId()).orElseThrow(() -> new EntityNotFound("Category parent not found: " + request.getParentId()));
+            category.setParent(parent);
+        } else {
+            category.setParent(null);
+        }
+        Category updated = categoryRepository.save(category);
+        return toResponse(updated);
+    }
+
+    @Transactional
     public void delete(Long id) {
-        categoryRepository.deleteById(id);
+        Category category = categoryRepository.findById(id).orElseThrow(() -> new EntityNotFound("Category not found: " + id));
+        categoryRepository.delete(category);
     }
 
     private CategoryResponse toResponse(Category category) {

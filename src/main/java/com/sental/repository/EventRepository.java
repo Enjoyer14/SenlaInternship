@@ -35,33 +35,60 @@ public class EventRepository extends AbstractDao<Event, Long> {
 
     public Optional<Event> findByIdWithAssociationsCriteria(Long id) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Event> query = cb.createQuery(Event.class);
-        Root<Event> root = query.from(Event.class);
 
-        root.fetch(Event_.venue, JoinType.LEFT);
-        root.fetch(Event_.categories, JoinType.LEFT);
-        root.fetch(Event_.organizerIds, JoinType.LEFT);
+        CriteriaQuery<Event> query1 = cb.createQuery(Event.class);
+        Root<Event> root1 = query1.from(Event.class);
+        root1.fetch(Event_.venue, JoinType.LEFT);
+        root1.fetch(Event_.categories, JoinType.LEFT);
+        query1.select(root1).distinct(true).where(cb.equal(root1.get(Event_.id), id));
 
-        query.select(root).distinct(true).where(cb.equal(root.get(Event_.id), id));
+        List<Event> results = entityManager.createQuery(query1).getResultList();
+        if (results.isEmpty()) {
+            return Optional.empty();
+        }
 
-        return entityManager.createQuery(query).getResultStream().findFirst();
+        CriteriaQuery<Event> query2 = cb.createQuery(Event.class);
+        Root<Event> root2 = query2.from(Event.class);
+        root2.fetch(Event_.organizerIds, JoinType.LEFT);
+        query2.select(root2).distinct(true).where(cb.equal(root2.get(Event_.id), id));
+
+        return entityManager.createQuery(query2).getResultStream().findFirst();
     }
 
     public Optional<Event> findByIdWithAssociationsJpql(Long id) {
-        TypedQuery<Event> query = entityManager.createQuery(
-                "select distinct e from Event e " +
-                        "left join fetch e.venue " +
-                        "left join fetch e.categories " +
-                        "left join fetch e.organizerIds " +
-                        "where e.id = :id",
-                Event.class);
-        query.setParameter("id", id);
-        return query.getResultStream().findFirst();
+        List<Event> events = entityManager.createQuery(
+                        "select distinct e from Event e " +
+                                "left join fetch e.venue " +
+                                "left join fetch e.categories " +
+                                "where e.id = :id",
+                        Event.class)
+                .setParameter("id", id)
+                .getResultList();
+
+        if (events.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return entityManager.createQuery(
+                        "select distinct e from Event e " +
+                                "left join fetch e.organizerIds " +
+                                "where e.id = :id",
+                        Event.class)
+                .setParameter("id", id)
+                .getResultStream().findFirst();
     }
 
     public Optional<Event> findByIdWithAssociationsEntityGraph(Long id) {
-        EntityGraph<?> graph = entityManager.getEntityGraph("Event.withAssociations");
+        EntityGraph<Event> graph = entityManager.createEntityGraph(Event.class);
+        graph.addAttributeNodes("venue", "categories");
+
         Map<String, Object> hints = Map.of("jakarta.persistence.fetchgraph", graph);
-        return Optional.ofNullable(entityManager.find(Event.class, id, hints));
+        Event event = entityManager.find(Event.class, id, hints);
+
+        if (event != null) {
+            event.getOrganizerIds().size();
+        }
+
+        return Optional.ofNullable(event);
     }
 }

@@ -1,6 +1,7 @@
 package com.sental.service;
 
-import com.sental.dto.request.VenueCreateRequest;
+import com.sental.dto.request.create.VenueCreateRequest;
+import com.sental.dto.request.update.VenueUpdateRequest;
 import com.sental.dto.response.VenueResponse;
 import com.sental.entity.Venue;
 import com.sental.exception.EntityNotFound;
@@ -15,7 +16,6 @@ import java.util.List;
 
 @Service
 public class VenueService {
-
     private final VenueRepository venueRepository;
 
     @Autowired
@@ -53,8 +53,25 @@ public class VenueService {
     }
 
     @Transactional
+    public VenueResponse update(Long id, VenueUpdateRequest request) {
+        Venue venue = venueRepository.findById(id).orElseThrow(() -> new EntityNotFound("Venue not found: " + id));
+
+        venue.setName(request.getName());
+        venue.setAddress(request.getAddress());
+        venue.setCity(request.getCity());
+        venue.setRegion(request.getRegion());
+        venue.setCapacity(request.getCapacity());
+        venue.setUpdatedAt(LocalDateTime.now());
+
+        Venue updated = venueRepository.save(venue);
+
+        return toResponse(updated);
+    }
+
+    @Transactional
     public void delete(Long id) {
-        venueRepository.deleteById(id);
+        Venue venue = venueRepository.findById(id).orElseThrow(() -> new EntityNotFound("Venue not found: " + id));
+        venueRepository.delete(venue);
     }
 
     private VenueResponse toResponse(Venue venue) {

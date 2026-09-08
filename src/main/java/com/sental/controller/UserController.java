@@ -1,56 +1,54 @@
 package com.sental.controller;
 
-import com.sental.exception.EntityNotFound;
-import com.sental.exception.SerializationException;
-import tools.jackson.databind.ObjectMapper;
-import com.sental.dto.request.UserCreateRequest;
+import com.sental.dto.request.update.UserUpdateRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import com.sental.dto.request.create.UserCreateRequest;
 import com.sental.dto.response.UserResponse;
 import com.sental.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Component
+@RestController
+@RequestMapping("/users")
 public class UserController {
-
     private final UserService userService;
-    private final ObjectMapper objectMapper;
 
     @Autowired
-    public UserController(UserService userService, ObjectMapper objectMapper) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.objectMapper = objectMapper;
     }
 
-    public String create(UserCreateRequest request) {
-        UserResponse response = userService.create(request);
-        return toJson(response);
+    @GetMapping("/health")
+    public String healthCheck() {
+        return "UserController is working!";
     }
 
-    public String findById(Long id) {
-        try {
-            UserResponse response = userService.findById(id);
-            return toJson(response);
-        } catch (EntityNotFound e) {
-            return "404 Not Found " + e.getMessage(); // 404 на будущее
-        }
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserResponse create(@RequestBody UserCreateRequest request) {
+        return userService.create(request);
     }
 
-    public String findAll() {
-        List<UserResponse> list = userService.findAll();
-        return toJson(list);
+    @GetMapping("/{id}")
+    public UserResponse findById(@PathVariable("id") Long id) {
+        return userService.findById(id);
     }
 
-    public void delete(Long id) {
+    @GetMapping
+    public List<UserResponse> findAll() {
+        return userService.findAll();
+    }
+
+    @PutMapping("/{id}")
+    public UserResponse update(@PathVariable("id") Long id, @RequestBody UserUpdateRequest request) {
+        return userService.update(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable("id") Long id) {
         userService.delete(id);
-    }
-
-    private String toJson(Object obj) {
-        try {
-            return objectMapper.writeValueAsString(obj);
-        } catch (RuntimeException e) {
-            throw new SerializationException("fail to create json" + e);
-        }
     }
 }
