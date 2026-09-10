@@ -1,6 +1,8 @@
 package com.sental.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sental.config.SecurityConfig;
+import com.sental.config.TestApplicationConfig;
 import com.sental.config.TestPersistenceConfig;
 import com.sental.config.WebConfig;
 import com.sental.dto.request.create.TicketCreateRequest;
@@ -13,7 +15,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -29,6 +33,7 @@ import java.time.LocalDateTime;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -36,7 +41,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebAppConfiguration
 @ContextConfiguration(classes = {
         TestPersistenceConfig.class,
-        WebConfig.class
+        TestApplicationConfig.class,
+        WebConfig.class,
+        SecurityConfig.class
+})
+@TestPropertySource(properties = {
+        "jwt.secret=test-secret-key-test-secret-key-test-secret-key-123456",
+        "jwt.expiration=3600000"
 })
 @Transactional
 class TicketControllerIntegrationTest {
@@ -52,12 +63,16 @@ class TicketControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(webApplicationContext)
+                .apply(springSecurity())
+                .build();
         objectMapper = new ObjectMapper();
         objectMapper.findAndRegisterModules();
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     void create_shouldReturnCreatedTicket() throws Exception {
         TicketCreateRequest request = new TicketCreateRequest();
         request.setUserId(100L);
@@ -87,6 +102,7 @@ class TicketControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     void findById_shouldReturnTicket() throws Exception {
         Ticket ticket = new Ticket();
         ticket.setTicketNumber("TEST123");
@@ -107,11 +123,13 @@ class TicketControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     void findById_whenNotFound_shouldReturn404() throws Exception {
         mockMvc.perform(get("/tickets/999"))    .andExpect(status().isNotFound());
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void findAll_shouldReturnList() throws Exception {
         Ticket ticket1 = new Ticket();
         ticket1.setTicketNumber("T1");
@@ -138,6 +156,7 @@ class TicketControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ORGANIZER")
     void update_shouldModifyStatus() throws Exception {
         Ticket ticket = new Ticket();
         ticket.setTicketNumber("OLD");
@@ -165,6 +184,7 @@ class TicketControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ORGANIZER")
     void update_whenNotFound_shouldReturn404() throws Exception {
         TicketUpdateRequest updateRequest = new TicketUpdateRequest();
         updateRequest.setStatus(TicketStatus.CANCELLED);
@@ -176,6 +196,7 @@ class TicketControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void delete_shouldRemoveTicket() throws Exception {
         Ticket ticket = new Ticket();
         ticket.setTicketNumber("DEL");
@@ -192,7 +213,14 @@ class TicketControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void delete_whenNotFound_shouldReturn404() throws Exception {
         mockMvc.perform(delete("/tickets/999")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void delete_asUser_shouldReturn403() throws Exception {
+        mockMvc.perform(delete("/tickets/{id}", 1L)).andExpect(status().isForbidden());
     }
 }

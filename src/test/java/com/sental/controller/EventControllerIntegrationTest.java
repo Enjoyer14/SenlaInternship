@@ -1,6 +1,8 @@
 package com.sental.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sental.config.SecurityConfig;
+import com.sental.config.TestApplicationConfig;
 import com.sental.config.TestPersistenceConfig;
 import com.sental.config.WebConfig;
 import com.sental.dto.request.create.EventCreateRequest;
@@ -15,7 +17,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -33,6 +37,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -40,7 +45,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebAppConfiguration
 @ContextConfiguration(classes = {
         TestPersistenceConfig.class,
-        WebConfig.class
+        TestApplicationConfig.class,
+        WebConfig.class,
+        SecurityConfig.class
+})
+@TestPropertySource(properties = {
+        "jwt.secret=test-secret-key-test-secret-key-test-secret-key-123456",
+        "jwt.expiration=3600000"
 })
 @Transactional
 class EventControllerIntegrationTest {
@@ -56,7 +67,10 @@ class EventControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(webApplicationContext)
+                .apply(springSecurity())
+                .build();
         objectMapper = new ObjectMapper();
         objectMapper.findAndRegisterModules();
     }
@@ -74,6 +88,7 @@ class EventControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ORGANIZER")
     void create_shouldReturnCreatedEvent() throws Exception {
         Venue venue = createVenue("Test Venue", "123 Main St", "Test City", 100);
 
@@ -111,6 +126,7 @@ class EventControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ORGANIZER")
     void create_withInvalidVenue_shouldReturn404() throws Exception {
         EventCreateRequest request = EventCreateRequest.builder()
                 .venueId(999L)
@@ -128,6 +144,7 @@ class EventControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     void findById_shouldReturnEvent() throws Exception {
         Venue venue = createVenue("Venue for Find", "456 Oak Ave", "Test City", 100);
 
@@ -154,11 +171,13 @@ class EventControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ORGANIZER")
     void findById_whenNotFound_shouldReturn404() throws Exception {
         mockMvc.perform(get("/events/999")).andExpect(status().isNotFound());
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     void findAll_shouldReturnList() throws Exception {
         Venue venue = createVenue("Venue List", "789 Pine St", "Test City", 100);
 
@@ -195,6 +214,7 @@ class EventControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ORGANIZER")
     void update_shouldModifyEvent() throws Exception {
         Venue oldVenue = createVenue("Old Venue", "111 Old Str", "Test City", 100);
         Venue newVenue = createVenue("New Venue", "222 New Blvd", "Test City", 150);
@@ -246,6 +266,7 @@ class EventControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ORGANIZER")
     void update_withInvalidVenue_shouldReturn404() throws Exception {
         Venue venue = createVenue("Venue", "333 Invalid Rd", "Test City", 100);
 
@@ -278,6 +299,7 @@ class EventControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ORGANIZER")
     void update_withInvalidCategory_shouldReturn404() throws Exception {
         Venue venue = createVenue("Venue", "444 Invalid Cat St", "Test City", 100);
 
@@ -311,6 +333,7 @@ class EventControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ORGANIZER")
     void delete_shouldRemoveEvent() throws Exception {
         Venue venue = createVenue("Venue for Delete", "555 Delete Ln", "Test City", 100);
 
@@ -335,7 +358,21 @@ class EventControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ORGANIZER")
     void delete_whenNotFound_shouldReturn404() throws Exception {
         mockMvc.perform(delete("/events/999")).andExpect(status().isNotFound());
     }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void update_asUser_shouldReturn403() throws Exception {
+        EventUpdateRequest request = new EventUpdateRequest();
+        mockMvc.perform(
+                put("/events/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+        ).andExpect(status().isForbidden());
+    }
+
+
 }
