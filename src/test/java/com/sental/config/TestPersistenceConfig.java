@@ -58,12 +58,6 @@ public class TestPersistenceConfig {
         return transactionManager;
     }
 
-    @Bean
-    public ObjectMapper objectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.findAndRegisterModules();
-        return objectMapper;
-    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {

@@ -1,6 +1,7 @@
 package com.sental.config;
 
 import com.sental.security.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -22,6 +23,9 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtService jwtService;
 
+    @Value("${security.jwt.login-url}")
+    private String loginUrl;
+
     public SecurityConfig(CustomUserDetailsService userDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter, JwtService jwtService) {
         this.userDetailsService = userDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
@@ -40,7 +44,7 @@ public class SecurityConfig {
             RestAuthenticationEntryPoint authenticationEntryPoint,
             RestAccessDeniedHandler accessDeniedHandler
     ) throws Exception {
-        JwtLoginFilter loginFilter = new JwtLoginFilter(authenticationManager, jwtService);
+        JwtLoginFilter loginFilter = new JwtLoginFilter(authenticationManager, jwtService, loginUrl);
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
@@ -70,142 +74,140 @@ public class SecurityConfig {
                         // categories
                         .requestMatchers(
                                 HttpMethod.GET,
-                                "/categories",
-                                "/categories/{id}"
+                                "/categories/**"
                         )
                         .hasAnyRole("USER", "ORGANIZER", "ADMIN")
+
                         .requestMatchers(
                                 HttpMethod.POST,
-                                "/categories"
+                                "/categories/**"
                         )
                         .hasRole("ADMIN")
+
                         .requestMatchers(
                                 HttpMethod.PUT,
-                                "/categories/{id}"
-                        )
-                        .hasRole("ADMIN")
-                        .requestMatchers(
-                                HttpMethod.DELETE,
-                                "/categories/{id}"
-                        )
+                                "/categories/**"
+                        ) .hasRole("ADMIN")
+                        .requestMatchers( HttpMethod.DELETE, "/categories/**" )
                         .hasRole("ADMIN")
 
                         // events
                         .requestMatchers(
                                 HttpMethod.GET,
-                                "/events",
-                                "/events/{id}"
+                                "/events/**"
                         )
                         .hasAnyRole("USER", "ORGANIZER", "ADMIN")
+
                         .requestMatchers(
                                 HttpMethod.POST,
-                                "/events",
-                                "/events/{eventId}/categories"
+                                "/events/**"
                         )
                         .hasAnyRole("ORGANIZER", "ADMIN")
+
                         .requestMatchers(
                                 HttpMethod.PUT,
-                                "/events/{id}"
+                                "/events/**"
                         )
                         .hasAnyRole("ORGANIZER", "ADMIN")
                         .requestMatchers(
                                 HttpMethod.DELETE,
-                                "/events/{id}"
+                                "/events/**"
                         )
                         .hasAnyRole("ORGANIZER", "ADMIN")
 
                         // organizers
                         .requestMatchers(
                                 HttpMethod.GET,
-                                "/organizers",
-                                "/organizers/{id}"
-                        )
-                        .authenticated()
+                                "/organizers/**"
+                        ) .authenticated()
+
                         .requestMatchers(
                                 HttpMethod.POST,
-                                "/organizers"
-                        )
-                        .hasRole("ADMIN")
+                                "/organizers/**"
+                        ) .hasRole("ADMIN")
+
                         .requestMatchers(
                                 HttpMethod.PUT,
-                                "/organizers/{id}"
-                        )
+                                "/organizers/**" )
                         .hasRole("ADMIN")
+
                         .requestMatchers(
                                 HttpMethod.DELETE,
-                                "/organizers/{id}"
+                                "/organizers/**"
                         )
                         .hasRole("ADMIN")
 
                         // tickets
                         .requestMatchers(
                                 HttpMethod.GET,
-                                "/tickets",
-                                "/tickets/{id}"
+                                "/tickets/**"
                         )
                         .authenticated()
+
                         .requestMatchers(
                                 HttpMethod.POST,
-                                "/tickets"
+                                "/tickets/**"
                         )
                         .authenticated()
+
                         .requestMatchers(
                                 HttpMethod.PUT,
-                                "/tickets/{id}"
+                                "/tickets/**"
                         )
                         .hasAnyRole("ORGANIZER", "ADMIN")
+
                         .requestMatchers(
                                 HttpMethod.DELETE,
-                                "/tickets/{id}"
+                                "/tickets/**"
                         )
                         .hasRole("ADMIN")
 
-                        // venue
+                        // venues
                         .requestMatchers(
                                 HttpMethod.GET,
-                                "/venues",
-                                "/venues/{id}"
+                                "/venues/**"
                         )
                         .hasAnyRole("USER", "ORGANIZER", "ADMIN")
 
                         .requestMatchers(
                                 HttpMethod.POST,
-                                "/venues"
+                                "/venues/**"
                         )
                         .hasRole("ADMIN")
 
                         .requestMatchers(
                                 HttpMethod.PUT,
-                                "/venues/{id}"
+                                "/venues/**"
                         )
                         .hasRole("ADMIN")
 
                         .requestMatchers(
                                 HttpMethod.DELETE,
-                                "/venues/{id}"
+                                "/venues/**"
                         )
                         .hasRole("ADMIN")
 
-                        //user
+                        // users
                         .requestMatchers(
                                 HttpMethod.GET,
-                                "/users",
-                                "/users/{id}"
-                        )
-                        .hasRole("ADMIN")
-                        .requestMatchers(
-                                HttpMethod.PUT,
-                                "/users/{id}"
-                        )
-                        .hasRole("ADMIN")
-                        .requestMatchers(
-                                HttpMethod.DELETE,
-                                "/users/{id}"
+                                "/users/**"
                         )
                         .hasRole("ADMIN")
 
-                        //остальное
-                        .anyRequest().authenticated()
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/users/**"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/users/**"
+                        )
+                        .hasRole("ADMIN")
+
+                        // остальное
+                        .anyRequest() .authenticated()
                 )
                 .addFilterAt(
                         loginFilter,

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,13 +19,11 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
 
-    public JwtLoginFilter(AuthenticationManager authenticationManager, JwtService jwtService) {
+    public JwtLoginFilter(AuthenticationManager authenticationManager, JwtService jwtService, String loginUrl) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
-        setFilterProcessesUrl("/auth/login");
+        setFilterProcessesUrl(loginUrl);
     }
-
-    public record UserCredentials(String username, String password) {}
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
         try {
