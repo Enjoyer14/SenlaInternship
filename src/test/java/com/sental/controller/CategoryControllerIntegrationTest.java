@@ -1,7 +1,8 @@
 package com.sental.controller;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sental.config.SecurityConfig;
+import com.sental.config.TestApplicationConfig;
 import com.sental.config.TestPersistenceConfig;
 import com.sental.config.WebConfig;
 import com.sental.dto.request.create.CategoryCreateRequest;
@@ -13,7 +14,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,6 +30,7 @@ import jakarta.persistence.PersistenceContext;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -34,7 +38,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebAppConfiguration
 @ContextConfiguration(classes = {
         TestPersistenceConfig.class,
-        WebConfig.class
+        TestApplicationConfig.class,
+        WebConfig.class,
+        SecurityConfig.class
+})
+@TestPropertySource(properties = {
+        "jwt.secret=test-secret-key-test-secret-key-test-secret-key-123456",
+        "jwt.expiration=3600000"
 })
 @Transactional
 class CategoryControllerIntegrationTest {
@@ -49,7 +59,10 @@ class CategoryControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(webApplicationContext)
+                .apply(springSecurity())
+                .build();
         objectMapper = new ObjectMapper();
         objectMapper.findAndRegisterModules();
     }
@@ -61,6 +74,7 @@ class CategoryControllerIntegrationTest {
                 .andExpect(content().string("CategoryController is working!"));
     }
 
+    @WithMockUser(roles = "ADMIN")
     @Test
     void create_shouldReturnCreatedCategory() throws Exception {
         CategoryCreateRequest request = new CategoryCreateRequest();
@@ -83,6 +97,7 @@ class CategoryControllerIntegrationTest {
         assertNull(saved.getParent());
     }
 
+    @WithMockUser(roles = "ADMIN")
     @Test
     void create_withParent_shouldSetParent() throws Exception {
         Category parent = new Category();
@@ -103,6 +118,7 @@ class CategoryControllerIntegrationTest {
                 .andExpect(jsonPath("$.parentId", is(parent.getId().intValue())));
     }
 
+    @WithMockUser(roles = "ADMIN")
     @Test
     void create_withInvalidParent_shouldReturnNotFound() throws Exception {
         CategoryCreateRequest request = new CategoryCreateRequest();
@@ -115,6 +131,7 @@ class CategoryControllerIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
+    @WithMockUser(roles = "USER")
     @Test
     void findById_shouldReturnCategory() throws Exception {
         Category category = new Category();
@@ -129,12 +146,14 @@ class CategoryControllerIntegrationTest {
                 .andExpect(jsonPath("$.parentId", nullValue()));
     }
 
+    @WithMockUser(roles = "ADMIN")
     @Test
     void findById_whenNotFound_shouldReturn404() throws Exception {
         mockMvc.perform(get("/categories/999"))
                 .andExpect(status().isNotFound());
     }
 
+    @WithMockUser(roles = "USER")
     @Test
     void findAll_shouldReturnList() throws Exception {
         Category cat1 = new Category();
@@ -151,6 +170,7 @@ class CategoryControllerIntegrationTest {
                 .andExpect(jsonPath("$[*].name", hasItems("Food", "Drinks")));
     }
 
+    @WithMockUser(roles = "ADMIN")
     @Test
     void update_shouldModifyCategory() throws Exception {
         Category category = new Category();
@@ -175,6 +195,7 @@ class CategoryControllerIntegrationTest {
         assertNull(updated.getParent());
     }
 
+    @WithMockUser(roles = "ADMIN")
     @Test
     void update_withNewParent_shouldChangeParent() throws Exception {
         Category parent = new Category();
@@ -203,6 +224,7 @@ class CategoryControllerIntegrationTest {
                 .andExpect(jsonPath("$.parentId", is(newParent.getId().intValue())));
     }
 
+    @WithMockUser(roles = "ADMIN")
     @Test
     void update_withInvalidParent_shouldReturn404() throws Exception {
         Category category = new Category();
@@ -220,6 +242,7 @@ class CategoryControllerIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
+    @WithMockUser(roles = "ADMIN")
     @Test
     void delete_shouldRemoveCategory() throws Exception {
         Category category = new Category();
@@ -232,8 +255,32 @@ class CategoryControllerIntegrationTest {
         assertNull(entityManager.find(Category.class, category.getId()));
     }
 
+    @WithMockUser(roles = "ADMIN")
     @Test
     void delete_whenNotFound_shouldReturn404() throws Exception {
         mockMvc.perform(delete("/categories/999")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void create_withoutAuthentication_shouldReturn401() throws Exception {
+        CategoryCreateRequest request = new CategoryCreateRequest();
+        request.setName("Furniture");
+
+        mockMvc.perform(post("/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void create_asUser_shouldReturn403() throws Exception {
+        CategoryCreateRequest request = new CategoryCreateRequest();
+        request.setName("Furniture");
+
+        mockMvc.perform(post("/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
     }
 }

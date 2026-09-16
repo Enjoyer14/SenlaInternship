@@ -8,19 +8,24 @@ import com.sental.enums.UserRole;
 import com.sental.exception.EntityNotFound;
 import com.sental.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.CharBuffer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
     }
 
@@ -29,7 +34,7 @@ public class UserService {
         User user = new User();
         user.setEmail(request.getEmail());
         user.setUsername(request.getUsername());
-        user.setPasswordHash(request.getPassword());
+        user.setPasswordHash(encodeAndWipe(request.getPassword()));
         user.setRole(UserRole.USER);
         user.setCreatedAt(LocalDateTime.now());
 
@@ -57,7 +62,10 @@ public class UserService {
         User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFound("User not found: " + id));
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
-        user.setPasswordHash(request.getPassword());
+        char[] rawPassword = request.getPassword();
+        if (rawPassword != null && rawPassword.length > 0) {
+            user.setPasswordHash(encodeAndWipe(rawPassword));
+        }
         user.setUpdatedAt(LocalDateTime.now());
 
         User updated = userRepository.save(user);
@@ -68,6 +76,17 @@ public class UserService {
     public void delete(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFound("User not found: " + id));
         userRepository.delete(user);
+    }
+
+    private String encodeAndWipe(char[] rawPassword) {
+        if (rawPassword == null || rawPassword.length == 0) {
+            throw new IllegalArgumentException("Password must not be empty");
+        }
+        try {
+            return passwordEncoder.encode(CharBuffer.wrap(rawPassword));
+        } finally {
+            Arrays.fill(rawPassword, '\0');
+        }
     }
 
     private UserResponse toResponse(User user) {

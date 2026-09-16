@@ -1,6 +1,8 @@
 package com.sental.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sental.config.SecurityConfig;
+import com.sental.config.TestApplicationConfig;
 import com.sental.config.TestPersistenceConfig;
 import com.sental.config.WebConfig;
 import com.sental.dto.request.create.OrganizerCreateRequest;
@@ -13,7 +15,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,6 +31,7 @@ import jakarta.persistence.PersistenceContext;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -34,7 +39,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebAppConfiguration
 @ContextConfiguration(classes = {
         TestPersistenceConfig.class,
-        WebConfig.class
+        TestApplicationConfig.class,
+        WebConfig.class,
+        SecurityConfig.class
+})
+@TestPropertySource(properties = {
+        "jwt.secret=test-secret-key-test-secret-key-test-secret-key-123456",
+        "jwt.expiration=3600000"
 })
 @Transactional
 class OrganizerControllerIntegrationTest {
@@ -50,7 +61,10 @@ class OrganizerControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(webApplicationContext)
+                .apply(springSecurity())
+                .build();
         objectMapper = new ObjectMapper();
         objectMapper.findAndRegisterModules();
     }
@@ -68,6 +82,7 @@ class OrganizerControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void create_shouldReturnCreatedOrganizer() throws Exception {
         User user = createTestUser();
 
@@ -97,6 +112,7 @@ class OrganizerControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void create_withInvalidUser_shouldReturn404() throws Exception {
         OrganizerCreateRequest request = new OrganizerCreateRequest();
         request.setUserId(999L);
@@ -111,6 +127,7 @@ class OrganizerControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     void findById_shouldReturnOrganizer() throws Exception {
         User user = createTestUser();
         Organizer organizer = new Organizer();
@@ -130,12 +147,14 @@ class OrganizerControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     void findById_whenNotFound_shouldReturn404() throws Exception {
         mockMvc.perform(get("/organizers/999"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     void findAll_shouldReturnList() throws Exception {
         User user1 = createTestUser();
 
@@ -170,6 +189,7 @@ class OrganizerControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void update_shouldModifyOrganizer() throws Exception {
         User user = createTestUser();
         Organizer organizer = new Organizer();
@@ -201,6 +221,7 @@ class OrganizerControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void update_whenNotFound_shouldReturn404() throws Exception {
         OrganizerUpdateRequest updateRequest = new OrganizerUpdateRequest();
         updateRequest.setCompanyName("Any");
@@ -214,6 +235,7 @@ class OrganizerControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void delete_shouldRemoveOrganizer() throws Exception {
         User user = createTestUser();
         Organizer organizer = new Organizer();
@@ -230,7 +252,14 @@ class OrganizerControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void delete_whenNotFound_shouldReturn404() throws Exception {
         mockMvc.perform(delete("/organizers/999")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void delete_asUser_shouldReturn403() throws Exception {
+        mockMvc.perform(delete("/organizers/{id}", 1L)).andExpect(status().isForbidden());
     }
 }

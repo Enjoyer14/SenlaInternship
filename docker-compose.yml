@@ -18,6 +18,9 @@ services:
     restart: unless-stopped
     ports:
       - "8080:8080"
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-3600000}
     depends_on:
       - db
 

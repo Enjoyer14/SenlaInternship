@@ -1,6 +1,8 @@
 package com.sental.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sental.config.SecurityConfig;
+import com.sental.config.TestApplicationConfig;
 import com.sental.config.TestPersistenceConfig;
 import com.sental.config.WebConfig;
 import com.sental.dto.request.create.VenueCreateRequest;
@@ -12,7 +14,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -28,6 +32,7 @@ import java.time.LocalDateTime;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -35,7 +40,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebAppConfiguration
 @ContextConfiguration(classes = {
         TestPersistenceConfig.class,
-        WebConfig.class
+        TestApplicationConfig.class,
+        WebConfig.class,
+        SecurityConfig.class
+})
+@TestPropertySource(properties = {
+        "jwt.secret=test-secret-key-test-secret-key-test-secret-key-123456",
+        "jwt.expiration=3600000"
 })
 @Transactional
 class VenueControllerIntegrationTest {
@@ -51,12 +62,16 @@ class VenueControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(webApplicationContext)
+                .apply(springSecurity())
+                .build();
         objectMapper = new ObjectMapper();
         objectMapper.findAndRegisterModules();
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void create_shouldReturnCreatedVenue() throws Exception {
         VenueCreateRequest request = new VenueCreateRequest();
         request.setName("Test Venue");
@@ -91,6 +106,7 @@ class VenueControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void findById_shouldReturnVenue() throws Exception {
         Venue venue = new Venue();
         venue.setName("Find Me");
@@ -111,12 +127,14 @@ class VenueControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     void findById_whenNotFound_shouldReturn404() throws Exception {
         mockMvc.perform(get("/venues/999"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     void findAll_shouldReturnList() throws Exception {
         Venue venue1 = new Venue();
         venue1.setName("Venue A");
@@ -145,6 +163,7 @@ class VenueControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void update_shouldModifyVenue() throws Exception {
         Venue venue = new Venue();
         venue.setName("Old Name");
@@ -185,6 +204,7 @@ class VenueControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void update_whenNotFound_shouldReturn404() throws Exception {
         VenueUpdateRequest updateRequest = new VenueUpdateRequest();
         updateRequest.setName("Any");
@@ -200,6 +220,7 @@ class VenueControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void delete_shouldRemoveVenue() throws Exception {
         Venue venue = new Venue();
         venue.setName("To Delete");
@@ -217,6 +238,7 @@ class VenueControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void delete_whenNotFound_shouldReturn404() throws Exception {
         mockMvc.perform(delete("/venues/999")).andExpect(status().isNotFound());
     }

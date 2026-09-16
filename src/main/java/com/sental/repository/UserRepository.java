@@ -15,11 +15,14 @@ import java.util.Optional;
 @Repository
 public class UserRepository extends AbstractDao<User, Long> {
     public Optional<User> findByUsername(String username) {
-        TypedQuery<User> query = entityManager.createQuery(
-                "select u from User u where u.username = :username",
-                User.class);
-        query.setParameter("username", username);
-        return query.getResultStream().findFirst();
+        List<User> users = entityManager.createQuery(
+                        "select u from User u where u.username = :username",
+                        User.class)
+                .setParameter("username", username)
+                .setMaxResults(1)
+                .getResultList();
+
+        return users.stream().findFirst();
     }
 
     public List<User> findByRoleAndEmail(UserRole role, String email) {
