@@ -1,18 +1,24 @@
 FROM eclipse-temurin:23-jre-noble
 
-ENV TOMCAT_VERSION=10.1.24
+ENV TOMCAT_VERSION=11.0.26 \
+    CATALINA_HOME=/usr/local/tomcat \
+    PATH=$PATH:/usr/local/tomcat/bin
 
-# Устанавливаем Tomcat, а затем сразу удаляем curl и очищаем кэш apt в одном слое (RUN)
-RUN apt-get update && apt-get install -y curl && \
-    curl -O https://archive.apache.org/dist/tomcat/tomcat-10/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz && \
-    tar -xvf apache-tomcat-${TOMCAT_VERSION}.tar.gz && \
-    mv apache-tomcat-${TOMCAT_VERSION} /usr/local/tomcat && \
-    rm apache-tomcat-${TOMCAT_VERSION}.tar.gz && \
+RUN groupadd -r tomcat && useradd -r -g tomcat tomcat && \
+    apt-get update && apt-get install -y curl && \
+    curl -fSL https://archive.apache.org/dist/tomcat/tomcat-11/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz -o tomcat.tar.gz && \
+    mkdir -p ${CATALINA_HOME} && \
+    tar -xvf tomcat.tar.gz -C ${CATALINA_HOME} --strip-components=1 && \
+    rm tomcat.tar.gz && \
+    rm -rf ${CATALINA_HOME}/webapps/* && \
+    chown -R tomcat:tomcat ${CATALINA_HOME} && \
     apt-get purge -y --auto-remove curl && \
     rm -rf /var/lib/apt/lists/*
 
-RUN rm -rf /usr/local/tomcat/webapps/*
-COPY target/main-1.0-SNAPSHOT.war /usr/local/tomcat/webapps/ROOT.war
+COPY target/*.war ${CATALINA_HOME}/webapps/ROOT.war
+RUN chown tomcat:tomcat ${CATALINA_HOME}/webapps/ROOT.war
+
+USER tomcat
 
 EXPOSE 8080
-CMD ["/usr/local/tomcat/bin/catalina.sh", "run"]
+CMD ["catalina.sh", "run"]
