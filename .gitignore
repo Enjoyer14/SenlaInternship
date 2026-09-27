@@ -1,0 +1,10 @@
+# Files that remained in the working directory from the previous branch
+.idea/
+target/
+liquibase/
+docker-compose.yml
+src/test/
+src/main/resources/*
+!src/main/resources/application.yml
+src/main/java/com/sental/*
+!src/main/java/com/sental/bank/
