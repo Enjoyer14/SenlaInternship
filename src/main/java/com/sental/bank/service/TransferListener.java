@@ -2,6 +2,7 @@ package com.sental.bank.service;
 
 import com.sental.bank.model.TransferMessage;
 import com.sental.bank.config.ConsumerRoleCondition;
+import com.sental.bank.exception.InvalidTransferException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Conditional;

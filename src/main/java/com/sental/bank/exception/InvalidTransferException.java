@@ -1,4 +1,4 @@
-package com.sental.bank.service;
+package com.sental.bank.exception;
 
 public class InvalidTransferException extends RuntimeException {
     public InvalidTransferException(String message) {

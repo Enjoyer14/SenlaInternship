@@ -1,6 +1,7 @@
 package com.sental.bank.service;
 
 import com.sental.bank.model.*;
+import com.sental.bank.exception.InvalidTransferException;
 import com.sental.bank.repository.AccountRepository;
 import com.sental.bank.repository.TransferRepository;
 import org.springframework.stereotype.Service;
